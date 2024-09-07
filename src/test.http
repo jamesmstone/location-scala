@@ -1,0 +1,29 @@
+DELETE 127.0.0.1:8080/users/james
+
+###
+GET http://127.0.0.1:8080/users
+
+###
+POST http://127.0.0.1:8080/users
+Content-Type: application/json
+
+{
+  "name": "james",
+  "age": 27
+}
+
+###
+###
+POST http://127.0.0.1:8080/users
+Content-Type: application/json
+
+{
+  "name": "james",
+  "age": 27,
+  "countryOfResidence": "Danmark"
+}
+
+###
+GET http://127.0.0.1:8080/users
+###
+GET http://127.0.0.1:8080/user/james

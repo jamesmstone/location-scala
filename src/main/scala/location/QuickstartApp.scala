@@ -5,9 +5,10 @@ import pekko.actor.typed.ActorSystem
 import pekko.actor.typed.scaladsl.Behaviors
 import pekko.http.scaladsl.Http
 import pekko.http.scaladsl.server.Route
-
 import scala.util.Failure
 import scala.util.Success
+import scalikejdbc._
+import scalikejdbc.config._
 
 //#main-class
 object QuickstartApp {
@@ -29,6 +30,19 @@ object QuickstartApp {
   //#start-http-server
   def main(args: Array[String]): Unit = {
     //#server-bootstrapping
+
+    DBs.setupAll()
+    // Create the users table if not exists
+    DB autoCommit { implicit session =>
+      sql"""
+        CREATE TABLE IF NOT EXISTS users (
+          name TEXT PRIMARY KEY,
+          age INTEGER,
+          countryOfResidence TEXT
+        )
+      """.execute.apply()
+    }
+
     val rootBehavior = Behaviors.setup[Nothing] { context =>
       val userRegistryActor = context.spawn(UserRegistry(), "UserRegistryActor")
       context.watch(userRegistryActor)

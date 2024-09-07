@@ -6,6 +6,7 @@ import pekko.actor.typed.ActorRef
 import pekko.actor.typed.Behavior
 import pekko.actor.typed.scaladsl.Behaviors
 import scala.collection.immutable
+import scalikejdbc._
 
 //#user-case-classes
 final case class User(name: String, age: Int, countryOfResidence: String)
@@ -28,17 +29,42 @@ object UserRegistry {
   private def registry(users: Set[User]): Behavior[Command] =
     Behaviors.receiveMessage {
       case GetUsers(replyTo) =>
+        val users = DB localTx { implicit session =>
+          sql"SELECT name, age, countryOfResidence FROM users"
+            .map(rs => User(rs.string("name"), rs.int("age"), rs.string("countryOfResidence")))
+            .list
+            .apply()
+        }
         replyTo ! Users(users.toSeq)
         Behaviors.same
       case CreateUser(user, replyTo) =>
+        DB localTx { implicit session =>
+          sql"""
+          INSERT INTO users (name, age, countryOfResidence)
+          VALUES (${user.name}, ${user.age}, ${user.countryOfResidence})
+        """.update.apply()
+        }
+        replyTo ! ActionPerformed(s"User ${user.name} created.")
+        Behaviors.same
         replyTo ! ActionPerformed(s"User ${user.name} created.")
         registry(users + user)
       case GetUser(name, replyTo) =>
-        replyTo ! GetUserResponse(users.find(_.name == name))
+        val maybeUser = DB localTx  { implicit session =>
+          sql"SELECT name, age, countryOfResidence FROM users WHERE name = $name"
+            .map(rs => User(rs.string("name"), rs.int("age"), rs.string("countryOfResidence")))
+            .single
+            .apply()
+        }
+        replyTo ! GetUserResponse(maybeUser)
         Behaviors.same
+
       case DeleteUser(name, replyTo) =>
+        DB localTx { implicit session =>
+          sql"DELETE FROM users WHERE name = $name".update.apply()
+        }
         replyTo ! ActionPerformed(s"User $name deleted.")
-        registry(users.filterNot(_.name == name))
+        Behaviors.same
+
     }
 }
 //#user-registry-actor
