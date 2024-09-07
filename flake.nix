@@ -24,7 +24,7 @@
       };
 
       name = "nix-flake-template";
-      mainClass = "hello";
+      mainClass = "location.hello";
 
       app = sbt-derivation.lib.mkSbtDerivation {
         inherit pkgs;
@@ -34,7 +34,7 @@
 
         src = ./.;
 
-        depsSha256 = "sha256-rVxXnlgRDcwZeOzGFxBheRRN2WtMHdyhGpIp8Oiwr6o=";
+        depsSha256 = "sha256-2oe7oUXDFs3tLxhxrtFlVp5uStb0VD/qCCnjgk0NUYw=";
 
         depsWarmupCommand = ''
           sbt 'managedClasspath; compilers'

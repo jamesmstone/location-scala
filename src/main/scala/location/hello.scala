@@ -11,7 +11,7 @@ import scalikejdbc._
 import scalikejdbc.config._
 
 //#main-class
-object QuickstartApp {
+object hello {
   //#start-http-server
   private def startHttpServer(routes: Route)(implicit system: ActorSystem[_]): Unit = {
     // Pekko HTTP still needs a classic ActorSystem to start

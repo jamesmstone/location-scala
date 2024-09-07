@@ -31,3 +31,9 @@ lazy val root = (project in file(".")).
       "ch.qos.logback"  %  "logback-classic"   % "1.5.6",
     )
   )
+
+// avoid generating docs
+Compile / doc / sources                := Nil
+Compile / packageDoc / publishArtifact := false
+
+enablePlugins(JavaAppPackaging)
