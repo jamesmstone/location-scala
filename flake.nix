@@ -23,7 +23,7 @@
         inherit system;
       };
 
-      name = "nix-flake-template";
+      name = "location-scala-server";
       mainClass = "location.hello";
 
       app = sbt-derivation.lib.mkSbtDerivation {
