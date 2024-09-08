@@ -1,23 +1,25 @@
 package location
 
+import com.typesafe.config.ConfigFactory
 import org.apache.pekko
 import pekko.actor.typed.ActorSystem
 import pekko.actor.typed.scaladsl.Behaviors
 import pekko.http.scaladsl.Http
 import pekko.http.scaladsl.server.Route
+
 import scala.util.Failure
 import scala.util.Success
-import scalikejdbc._
-import scalikejdbc.config._
+import scalikejdbc.*
+import scalikejdbc.config.*
 
 //#main-class
 object hello {
   //#start-http-server
-  private def startHttpServer(routes: Route)(implicit system: ActorSystem[_]): Unit = {
+  private def startHttpServer(routes: Route, port :Int)(implicit system: ActorSystem[_]): Unit = {
     // Pekko HTTP still needs a classic ActorSystem to start
     import system.executionContext
 
-    val futureBinding = Http().newServerAt("localhost", 8080).bind(routes)
+    val futureBinding = Http().newServerAt("localhost", port).bind(routes)
     futureBinding.onComplete {
       case Success(binding) =>
         val address = binding.localAddress
@@ -64,7 +66,8 @@ object hello {
         )
       """.execute.apply()
     }
-
+    val config = ConfigFactory.load()
+    val port = config.getInt("my-app.routes.port")
 
     val rootBehavior = Behaviors.setup[Nothing] { context =>
 
@@ -74,7 +77,7 @@ object hello {
       context.watch(locationRegistryActor)
 
       val routes = new AllRoutes(userRegistryActor, locationRegistryActor)(context.system)
-      startHttpServer(routes.allRoutes)(context.system)
+      startHttpServer(routes.allRoutes, port)(context.system)
 
       Behaviors.empty
     }
