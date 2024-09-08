@@ -15,11 +15,11 @@ import scalikejdbc.config.*
 //#main-class
 object hello {
   //#start-http-server
-  private def startHttpServer(routes: Route, port :Int)(implicit system: ActorSystem[_]): Unit = {
+  private def startHttpServer(routes: Route, host: String, port :Int)(implicit system: ActorSystem[_]): Unit = {
     // Pekko HTTP still needs a classic ActorSystem to start
     import system.executionContext
 
-    val futureBinding = Http().newServerAt("localhost", port).bind(routes)
+    val futureBinding = Http().newServerAt(host, port).bind(routes)
     futureBinding.onComplete {
       case Success(binding) =>
         val address = binding.localAddress
@@ -68,6 +68,7 @@ object hello {
     }
     val config = ConfigFactory.load()
     val port = config.getInt("my-app.routes.port")
+    val host = config.getString("my-app.routes.host")
 
     val rootBehavior = Behaviors.setup[Nothing] { context =>
 
@@ -77,7 +78,7 @@ object hello {
       context.watch(locationRegistryActor)
 
       val routes = new AllRoutes(userRegistryActor, locationRegistryActor)(context.system)
-      startHttpServer(routes.allRoutes, port)(context.system)
+      startHttpServer(routes.allRoutes, host, port)(context.system)
 
       Behaviors.empty
     }
