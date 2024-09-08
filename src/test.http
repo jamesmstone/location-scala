@@ -1,3 +1,27 @@
+###
+POST http://127.0.0.1:8080/
+Content-Type: application/json
+
+{
+  "_id": "c5f313e5",
+  "acc": 12,
+  "alt": 60,
+  "batt": 69,
+  "bs": 1,
+  "conn": "w",
+  "created_at": 1725715581,
+  "lat": 55.7048775,
+  "lon": 12.5568046,
+  "m": 1,
+  "t": "u",
+  "tid": "ay",
+  "topic": "owntracks/user/bluejay",
+  "tst": 1725715530,
+  "vac": 1,
+  "vel": 0
+}
+###
+
 DELETE 127.0.0.1:8080/users/james
 
 ###
@@ -12,7 +36,6 @@ Content-Type: application/json
   "age": 27
 }
 
-###
 ###
 POST http://127.0.0.1:8080/users
 Content-Type: application/json

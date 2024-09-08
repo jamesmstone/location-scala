@@ -1,6 +1,6 @@
 package location
 
-import location.UserRegistry.ActionPerformed
+import location.ActionPerformed
 
 //#json-formats
 import spray.json.RootJsonFormat
@@ -10,9 +10,10 @@ object JsonFormats  {
   // import the default encoders for primitive types (Int, String, Lists etc)
   import DefaultJsonProtocol._
 
+  implicit val locationJsonFormat: RootJsonFormat[Location] = jsonFormat16(Location.apply)
+
   implicit val userJsonFormat: RootJsonFormat[User] = jsonFormat3(User.apply)
   implicit val usersJsonFormat: RootJsonFormat[Users] = jsonFormat1(Users.apply)
 
-  implicit val actionPerformedJsonFormat: RootJsonFormat[ActionPerformed]  = jsonFormat1(ActionPerformed.apply)
-}
+  implicit val actionPerformedJsonFormat: RootJsonFormat[ActionPerformed] = jsonFormat1(ActionPerformed.apply)}
 //#json-formats

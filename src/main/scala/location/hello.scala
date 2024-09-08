@@ -42,13 +42,39 @@ object hello {
         )
       """.execute.apply()
     }
+    DB autoCommit { implicit session =>
+      sql"""
+        CREATE TABLE IF NOT EXISTS locations (
+          _id TEXT PRIMARY KEY,
+          acc INTEGER,
+          alt INTEGER,
+          batt INTEGER,
+          bs INTEGER,
+          conn TEXT,
+          created_at INTEGER,
+          lat REAL,
+          lon REAL,
+          m INTEGER,
+          t TEXT,
+          tid TEXT,
+          topic TEXT,
+          tst INTEGER,
+          vac INTEGER,
+          vel INTEGER
+        )
+      """.execute.apply()
+    }
+
 
     val rootBehavior = Behaviors.setup[Nothing] { context =>
-      val userRegistryActor = context.spawn(UserRegistry(), "UserRegistryActor")
-      context.watch(userRegistryActor)
 
-      val routes = new UserRoutes(userRegistryActor)(context.system)
-      startHttpServer(routes.userRoutes)(context.system)
+      val userRegistryActor = context.spawn(UserRegistry(), "UserRegistryActor")
+      val locationRegistryActor = context.spawn(LocationRegistry(), "LocationRegistryActor")
+      context.watch(userRegistryActor)
+      context.watch(locationRegistryActor)
+
+      val routes = new AllRoutes(userRegistryActor, locationRegistryActor)(context.system)
+      startHttpServer(routes.allRoutes)(context.system)
 
       Behaviors.empty
     }

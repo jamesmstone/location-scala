@@ -8,6 +8,8 @@ import pekko.actor.typed.scaladsl.Behaviors
 import scala.collection.immutable
 import scalikejdbc._
 
+import location.ActionPerformed
+
 //#user-case-classes
 final case class User(name: String, age: Int, countryOfResidence: String)
 final case class Users(users: immutable.Seq[User])
@@ -22,7 +24,6 @@ object UserRegistry {
   final case class DeleteUser(name: String, replyTo: ActorRef[ActionPerformed]) extends Command
 
   final case class GetUserResponse(maybeUser: Option[User])
-  final case class ActionPerformed(description: String)
 
   def apply(): Behavior[Command] = registry(Set.empty)
 

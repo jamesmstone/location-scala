@@ -1,21 +1,23 @@
 package location
 
 import org.apache.pekko
-import pekko.http.scaladsl.server.Directives._
-import pekko.http.scaladsl.model.StatusCodes
+import pekko.http.scaladsl.server.Directives.*
+import pekko.http.scaladsl.model.StatusCodes.*
 import pekko.http.scaladsl.server.Route
 
 import scala.concurrent.Future
-import location.UserRegistry._
+import location.UserRegistry.*
+import org.apache.pekko.http.scaladsl.model.StatusCodes
 import pekko.actor.typed.ActorRef
 import pekko.actor.typed.ActorSystem
-import pekko.actor.typed.scaladsl.AskPattern._
+import pekko.actor.typed.scaladsl.AskPattern.*
 import pekko.util.Timeout
 
-//#import-json-formats
-//#user-routes-class
-class UserRoutes(userRegistry: ActorRef[UserRegistry.Command])(implicit val system: ActorSystem[_]) {
+import scala.concurrent.Future
+import scala.concurrent.duration.*
 
+
+class AllRoutes(userRegistry: ActorRef[UserRegistry.Command], locationRegistry: ActorRef[LocationRegistry.Command])(implicit val system: ActorSystem[_]) {
   //#user-routes-class
   import pekko.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
   import JsonFormats._
@@ -33,10 +35,10 @@ class UserRoutes(userRegistry: ActorRef[UserRegistry.Command])(implicit val syst
   def deleteUser(name: String): Future[ActionPerformed] =
     userRegistry.ask(DeleteUser(name, _))
 
-  //#all-routes
-  //#users-get-post
-  //#users-get-delete
-  val userRoutes: Route =
+  def saveLocation(location: Location): Future[ActionPerformed] =
+    locationRegistry.ask(LocationRegistry.SaveLocation(location, _))
+
+  val allRoutes: Route =
     pathPrefix("users") {
       concat(
         //#users-get-delete
@@ -48,7 +50,7 @@ class UserRoutes(userRegistry: ActorRef[UserRegistry.Command])(implicit val syst
             post {
               entity(as[User]) { user =>
                 onSuccess(createUser(user)) { performed =>
-                  complete((StatusCodes.Created, performed))
+                  complete((Created, performed))
                 }
               }
             })
@@ -69,12 +71,20 @@ class UserRoutes(userRegistry: ActorRef[UserRegistry.Command])(implicit val syst
             delete {
               //#users-delete-logic
               onSuccess(deleteUser(name)) { performed =>
-                complete((StatusCodes.OK, performed))
+                complete((OK, performed))
               }
               //#users-delete-logic
             })
         })
       //#users-get-delete
-    }
-  //#all-routes
+    } ~
+      pathEndOrSingleSlash {
+        post {
+          entity(as[Location]) { location =>
+            onSuccess(saveLocation(location)) { performed =>
+              complete((Created, performed))
+            }
+          }
+        }
+      }
 }
